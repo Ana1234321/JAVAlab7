@@ -85,10 +85,12 @@ public class MainFrame extends JFrame {
         textAreaOutgoing = new JTextArea(OUTGOING_AREA_DEFAULT_ROWS, 0);
 
 
-        final JScrollPane scrollPaneOutgoing = new JScrollPane(textAreaOutgoing);
+        final JScrollPane scrollPaneOutgoing =  new JScrollPane(textAreaOutgoing);
 
         final JPanel messagePanel = new JPanel();
         messagePanel.setBorder(BorderFactory.createTitledBorder("Сообщение"));
+
+
 
 
         final JButton buttonSend = new JButton("Отправить");
@@ -102,30 +104,28 @@ public class MainFrame extends JFrame {
 
         final ButtonGroup myButtons = new ButtonGroup();
 
-        JRadioButton radio1 = new JRadioButton("Вкл.", true);
-        myButtons.add(radio1);
+        JRadioButton radio1 = new JRadioButton ("Вкл.",true);
+        myButtons.add (radio1);
         radio1.addActionListener(new ActionListener() {
 
 
             public void actionPerformed(ActionEvent e) {
-                if (!turn) {
+                if(!turn){
                     turn = true;
                     textAreaIncoming.append("Клиент включен" + "\n");
-                    buttonSend.setEnabled(true);
-                }
+                    buttonSend.setEnabled(true);}
             }
         });
 
-        JRadioButton radio2 = new JRadioButton("Выкл.", true);
-        myButtons.add(radio2);
+        JRadioButton radio2 = new JRadioButton ("Выкл.",true);
+        myButtons.add (radio2);
         radio2.addActionListener(new ActionListener() {
 
             public void actionPerformed(ActionEvent e) {
-                if (turn) {
+                if(turn){
                     turn = false;
                     textAreaIncoming.append("Клиент выключен" + "\n");
-                    buttonSend.setEnabled(false);
-                }
+                    buttonSend.setEnabled(false);}
             }
         });
 
@@ -183,5 +183,123 @@ public class MainFrame extends JFrame {
                 .addContainerGap());
 
 
+        new Thread(new Runnable() {
+
+
+            public void run() {
+                try {
+
+                    final ServerSocket serverSocket = new ServerSocket(SERVER_PORT);
+                    while (!Thread.interrupted()) {
+                        final Socket socket = serverSocket.accept();
+                        final DataInputStream in = new DataInputStream(
+                                socket.getInputStream());
+
+
+                        final String senderName = in.readUTF();
+
+
+                        final String message = in.readUTF();
+
+
+                        final String address =
+                                ((InetSocketAddress) socket
+                                        .getRemoteSocketAddress())
+                                        .getAddress()
+                                        .getHostAddress();
+
+                        socket.close();
+
+                        if (turn==true){
+                            textAreaIncoming.append(senderName +
+                                    " (" + address + "):" + message + "\n");
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    JOptionPane.showMessageDialog(MainFrame.this,
+                            "Ошибка в работе сервера", "Ошибка",
+                            JOptionPane.ERROR_MESSAGE);
+                }
+
+            }
+        }).start();
+    }
+
+    private Object newJScrollPane(JTextArea textAreaOutgoing2) {
+        return null;
+    }
+
+    private void sendMessage() {
+        try {
+            final String senderName = textFieldFrom.getText().trim();
+            final String destinationAddress = textFieldTo.getText().trim();
+            final String message = textAreaOutgoing.getText().trim();
+
+            if (senderName.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "Введите имя отправителя", "Ошибка",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (destinationAddress.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        "Введите адрес узла-получателя", "Ошибка",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            if (message.isEmpty()) {
+                JOptionPane.showMessageDialog(this,
+                        " Введите текст сообщения", "Ошибка",
+                        JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+
+            final Socket socket =  new Socket(destinationAddress, SERVER_PORT);
+
+
+            final DataOutputStream out =  new DataOutputStream(socket.getOutputStream());
+
+
+            out.writeUTF(senderName);
+
+
+            out.writeUTF(message);
+
+
+            socket.close();
+
+
+            if (turn==true){
+                textAreaIncoming.append("Я -> " + destinationAddress + ": "
+                        + message + "\n");
+            }
+
+
+            textAreaOutgoing.setText("");
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(MainFrame.this,
+                    "Не удалось отправить сообщение: узел-адресат не найден",
+                    "Ошибка", JOptionPane.ERROR_MESSAGE);
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(MainFrame.this,
+                    "Не удалось отправить сообщение", "Ошибка",
+                    JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(new Runnable() {
+
+            //
+            public void run() {
+                final MainFrame frame = new MainFrame();
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                frame.setVisible(true);
+            }
+        });
     }
 }
