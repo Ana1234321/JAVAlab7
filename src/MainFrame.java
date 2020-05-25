@@ -85,12 +85,10 @@ public class MainFrame extends JFrame {
         textAreaOutgoing = new JTextArea(OUTGOING_AREA_DEFAULT_ROWS, 0);
 
 
-        final JScrollPane scrollPaneOutgoing =  new JScrollPane(textAreaOutgoing);
+        final JScrollPane scrollPaneOutgoing = new JScrollPane(textAreaOutgoing);
 
         final JPanel messagePanel = new JPanel();
         messagePanel.setBorder(BorderFactory.createTitledBorder("Сообщение"));
-
-
 
 
         final JButton buttonSend = new JButton("Отправить");
@@ -100,6 +98,90 @@ public class MainFrame extends JFrame {
                 sendMessage();
             }
         });
+
+
+        final ButtonGroup myButtons = new ButtonGroup();
+
+        JRadioButton radio1 = new JRadioButton("Вкл.", true);
+        myButtons.add(radio1);
+        radio1.addActionListener(new ActionListener() {
+
+
+            public void actionPerformed(ActionEvent e) {
+                if (!turn) {
+                    turn = true;
+                    textAreaIncoming.append("Клиент включен" + "\n");
+                    buttonSend.setEnabled(true);
+                }
+            }
+        });
+
+        JRadioButton radio2 = new JRadioButton("Выкл.", true);
+        myButtons.add(radio2);
+        radio2.addActionListener(new ActionListener() {
+
+            public void actionPerformed(ActionEvent e) {
+                if (turn) {
+                    turn = false;
+                    textAreaIncoming.append("Клиент выключен" + "\n");
+                    buttonSend.setEnabled(false);
+                }
+            }
+        });
+
+
+        final GroupLayout layout2 = new GroupLayout(messagePanel);
+        messagePanel.setLayout(layout2);
+
+        layout2.setHorizontalGroup(layout2.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout2.createParallelGroup(Alignment.TRAILING)
+                        .addGroup(layout2.createSequentialGroup()
+                                .addComponent(labelFrom)
+                                .addGap(SMALL_GAP)
+                                .addComponent(textFieldFrom)
+                                .addGap(LARGE_GAP)
+                                .addComponent(labelTo)
+                                .addGap(SMALL_GAP)
+                                .addComponent(textFieldTo))
+                        .addComponent(scrollPaneOutgoing)
+                        .addComponent(radio1)
+                        .addComponent(radio2)
+                        .addComponent(buttonSend))
+                .addContainerGap());
+        layout2.setVerticalGroup(layout2.createSequentialGroup()
+                .addContainerGap()
+
+                .addGroup(layout2.createParallelGroup(Alignment.BASELINE)
+                        .addComponent(labelFrom)
+                        .addComponent(textFieldFrom)
+                        .addComponent(labelTo)
+                        .addComponent(textFieldTo))
+                .addGap(MEDIUM_GAP)
+                .addComponent(scrollPaneOutgoing)
+                .addGap(MEDIUM_GAP)
+                .addComponent(buttonSend)
+                .addComponent(radio1)
+                .addComponent(radio2)
+                .addContainerGap());
+
+
+        final GroupLayout layout1 = new GroupLayout(getContentPane());
+        setLayout(layout1);
+
+        layout1.setHorizontalGroup(layout1.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout1.createParallelGroup()
+                        .addComponent(scrollPaneIncoming)
+                        .addComponent(messagePanel))
+                .addContainerGap());
+        layout1.setVerticalGroup(layout1.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(scrollPaneIncoming)
+                .addGap(MEDIUM_GAP)
+                .addComponent(messagePanel)
+                .addContainerGap());
+
 
     }
 }
